@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+   
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Summarizer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 10px;
+        }
+        label, input, button {
+            display: block;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Page Summarizer</h1>
+    <label for="ollama-url">Ollama URL:</label>
+    <input type="text" id="ollama-url" placeholder="http://localhost:11434/api/chat" />
+    <button id="save-url-button">Save</button>
+    <button id="summarize-button">Summarize</button>
+    <div id="summary-output"></div>
+    <script src="popup.js"></script>
+</body>
+</html>

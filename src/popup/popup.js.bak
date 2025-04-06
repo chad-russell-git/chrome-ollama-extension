@@ -1,0 +1,121 @@
+document.addEventListener('DOMContentLoaded', () => {
+    const summarizeButton = document.getElementById('summarize-button');
+
+    if (!summarizeButton) {
+        console.error('summarizeButton is not defined. Ensure the button exists in popup.html and the script is loaded after the DOM.');
+        return;
+    }
+
+    const summaryOutput = document.getElementById('summary-output');
+    const ollamaUrlInput = document.getElementById('ollama-url');
+    const saveUrlButton = document.getElementById('save-url-button');
+
+    // Load the saved URL when the popup is opened
+    chrome.storage.sync.get(['ollamaUrl'], (result) => {
+        ollamaUrlInput.value = result.ollamaUrl || 'http://localhost:11434/api/chat';
+    });
+
+    // Save the URL when the user clicks the save button
+    saveUrlButton.addEventListener('click', () => {
+        const ollamaUrl = ollamaUrlInput.value;
+        chrome.storage.sync.set({ ollamaUrl }, () => {
+            summaryOutput.textContent = 'Ollama URL saved!';
+        });
+    });
+
+    // Handle the "Summarize" button click
+    summarizeButton.addEventListener('click', () => {
+        console.log('Summarize button clicked'); // Debug log
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            console.log('Sending message to content script');
+            chrome.tabs.sendMessage(tabs[0].id, { action: 'getContent' }, (response) => {
+                if (chrome.runtime.lastError) {
+                    console.error('Error communicating with content script:', chrome.runtime.lastError.message);
+                    summaryOutput.textContent = 'Error: ' + chrome.runtime.lastError.message;
+                    return;
+                }
+
+                console.log('Response from content script:', response);
+                if (response && response.content) {
+                    console.log('Content retrieved from content script:', response.content);
+                    streamOllamaResponse(response.content); // Pass the content to the fetchSummary function
+                } else {
+                    console.error('Failed to retrieve content from content script.');
+                    summaryOutput.textContent = 'Failed to retrieve content.';
+                }
+            });
+        });
+    });
+
+    async function streamOllamaResponse(content) {
+        const response = await fetch('http://localhost:11434/api/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: 'llama3.2',
+                messages: [
+                    {
+                        role: 'user',
+                        content: 'summarize the following' + content,
+                        
+                    }
+                ],
+                stream: false
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let partialData = '';
+
+        while (true) {
+            const { done, value } = await reader.read();
+
+            if (done) {
+                break;
+            }
+
+            partialData += decoder.decode(value);
+            const parts = partialData.split('\n');
+            partialData = parts.pop() || ''; // Keep the last (potentially incomplete) part
+
+            for (const part of parts) {
+                if (part.trim() !== '') {
+                    try {
+                        const json = JSON.parse(part);
+                        // Process the received JSON object
+                        console.log(json.response); // Example: Print the response content
+                    } catch (e) {
+                        console.error('Error parsing JSON:', e, part);
+                    }
+                }
+            }
+        }
+        // Handle any remaining data
+        if (partialData.trim() !== '') {
+            try {
+                const json = JSON.parse(partialData);
+                console.log(json.response);
+            } catch (e) {
+                console.error("Error parsing final JSON:", e, partialData);
+            }
+        }
+    }
+});
+
+console.log('Content script loaded');
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    console.log('Message received in content script:', request);
+    if (request.action === 'getContent') {
+        const content = document.body.innerText || '';
+        console.log('Extracted content:', content);
+        sendResponse({ content }); // Send the response
+    }
+    return true; // Indicate that the response will be sent asynchronously
+});

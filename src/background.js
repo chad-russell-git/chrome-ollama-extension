@@ -8,28 +8,38 @@ console.log('Background script loaded');
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log('Message received in background script:', request);
-    if (request.action === 'fetchSummary') {
-        console.log('Fetching summary from background script');
-        // Add fetch logic here if applicable
-    }
-});
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === SUMMARY_REQUEST) {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             const activeTab = tabs[0];
             chrome.tabs.sendMessage(activeTab.id, { action: "get_content" }, (response) => {
                 if (response && response.content) {
-                    summarizeContent(response.content).then(summary => {
-                        sendResponse({ summary });
-                    });
+                    summarizeContent(response.content)
+                        .then((summary) => {
+                            console.log('Summary generated:', summary);
+                            sendResponse({ summary }); // Send the summary back
+                        })
+                        .catch((error) => {
+                            console.error('Error summarizing content:', error);
+                            sendResponse({ error: "Failed to summarize content" }); // Handle errors
+                        });
                 } else {
-                    sendResponse({ summary: "No content found." });
+                    console.warn("No content received from content script.");
+                    sendResponse({ summary: "No content found." }); // Handle empty content
                 }
             });
-            return true; // Keep the message channel open for sendResponse
+
+            // Return true to keep the message channel open for asynchronous sendResponse
+            return true;
         });
+
+        // Return true here as well to ensure the message port stays open
+        return true;
     }
+
+    // Handle unknown actions
+    sendResponse({ error: "Unknown action" });
+    return true;
 });
 
 async function summarizeContent(content) {

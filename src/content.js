@@ -1,5 +1,5 @@
 const extractTextFromPage = () => {
-    const bodyText = document.body;
+    const bodyText = document.body.innerText;
     console.log('Extracted page text:', bodyText); // Log the extracted text
     return bodyText;
 };
@@ -19,10 +19,14 @@ const sendTextToBackground = (text) => {
 const main = () => {
     const pageText = extractTextFromPage();
     sendTextToBackground(pageText);
-    console.log(pageText)
+    console.log(pageText);
 };
 
-main();
+// Ensure the DOM is fully loaded before running the main function
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM fully loaded and parsed');
+    main();
+});
 
 console.log('Content script loaded');
 
@@ -47,5 +51,3 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     return true; // Indicate that the response will be sent asynchronously
 });
-
-;

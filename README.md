@@ -47,6 +47,11 @@ This project is a Chrome extension that summarizes the current web page using a 
   - `src/utils/api.js`: Utility functions for API calls to the Ollama deployment.
   - `manifest.json`: Configuration file for the Chrome extension.
 
+  ## Ollama
+
+  When running Ollama locally you must modify the 
+OLLAMA_ORIGINS environment variable to OLLAMA_ORIGINS=*.   Your format for the environment variable may vary.   Ollama needs to be run via "Ollama serve" with the CORS environment variable set as opposed to the intance that gets instantiated at startup.    Stop the default instance, load the env variable mentioned above and run "ollama serve".    Pre-reqs are that you have loaded a working LLM model into Ollama. 
+
 ## License
 
 This project is licensed under the MIT License.

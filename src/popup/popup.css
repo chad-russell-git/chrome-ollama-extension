@@ -1,16 +1,31 @@
+/* popup.css */
+@import url('https://fonts.googleapis.com/css2?family=Underdog&display=swap');
+
+/* import handel font */
+@font-face {
+    font-family: 'HandelGothic';
+    src: url('fonts/Handel Gothic Regular.woff') format('woff');
+}
+
+label, input, button {
+    display: block;
+    margin-bottom: 10px;
+}
+
+
 body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 20px;
     background-color: #f9f9f9;
     color: #333;
-    width: 600px !important;
-    
+    width: 500px;
 }
 
 h1 {
     font-size: 24px;
     margin-bottom: 10px;
+    font-family: 'HandelGothic', sans-serif;
 }
 
 .summary {

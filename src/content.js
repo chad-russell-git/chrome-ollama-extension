@@ -4,7 +4,10 @@ const sidebarHTML = `
             <button id="close-sidebar">X</button>
             <h2>Page Summarizer</h2>
         </div>
-        <button id="summarize-button">Summarize</button>
+        <div class="buttons">
+            <button id="summarize-button">Summarize</button>
+            <button id="clipboard-button">From ClipBoard</button>
+        </div>
         <div id="summary-output"></div>
     </div>
 `;
@@ -41,7 +44,7 @@ const sidebarCSS = `
         font-size: 16px;
     }
 
-    #ollama-sidebar #summarize-button {
+    #ollama-sidebar #summarize-button,#clipboard-button {
         background-color: #4CAF50;
         color: white;
         border: none;
@@ -63,6 +66,7 @@ const sidebarCSS = `
         padding: 10px;
         margin-top: 10px;
         max-height: 300px;
+        min-height: 100px;
         overflow-y: auto;
         font-family: 'Arial', sans-serif;
         font-size: 14px;
@@ -98,6 +102,17 @@ const injectSidebar = () => {
     const summarizeButton = document.getElementById('summarize-button');
     summarizeButton.addEventListener('click', () => {
         fetchSummary(document.body.innerText || '')
+    });
+
+    const clipboardButton = document.getElementById('clipboard-button');
+    clipboardButton.addEventListener('click', async () => {
+        try {
+            const text = await navigator.clipboard.readText();
+            console.log('Clipboard content:', text);
+            fetchSummary(text);
+        } catch (error) {
+            console.error('Failed to read clipboard:', error);
+        }
     });
 }
 

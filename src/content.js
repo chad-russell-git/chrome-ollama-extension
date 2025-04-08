@@ -23,6 +23,7 @@ const sidebarCSS = `
 
     #ollama-sidebar {
         background-color:rgb(0, 0, 0);
+        background-image: linear-gradient(to bottom, rgb(0, 0, 0), rgb(46, 46, 46));
         padding: 10px;
         border-bottom: 1px solid #ccc;
         text-align: center;

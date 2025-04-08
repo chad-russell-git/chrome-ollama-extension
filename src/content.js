@@ -2,6 +2,7 @@ const sidebarHTML = `
     <div>
         <div class="sidebar-header">
             <button id="close-sidebar">X</button>
+            <button id="info-button" onClick="window.open('https://github.com/chad-russell-git/chrome-ollama-extension/', '_blank');">i</button>
             <h2>Page Summarizer</h2>
         </div>
         <div class="buttons">
@@ -46,6 +47,23 @@ const sidebarCSS = `
         width: 20px;
         height: 20px;
         font-family: 'HandelGothic', sans-serif;
+        font-weight: bold;
+        border-radius: 50%;
+        text-align: center;
+    }
+
+    #ollama-sidebar #info-button {
+        background-color:rgb(21, 138, 0);
+        position: absolute;
+        right: 3px;
+        top: 3px;
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-size: 10px;
+        width: 20px;
+        height: 20px;
+        font-family: sans-serif;
         font-weight: bold;
         border-radius: 50%;
         text-align: center;

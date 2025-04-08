@@ -14,10 +14,15 @@ const sidebarHTML = `
             </select>
             <div class="slider-container"> 
                 <h3>Response Length</h3>
-                <input type="range" id="verbose-slider" min="0" max="100" value="50">
+                <input type="range" id="verbose-slider" min="0" max="100" value="70">
             </div>
         </div>
-        <button id="summarize-button">Summarize</button>
+        <div class="actions">
+            <button id="summarize-button">Summarize</button>
+            <div id="status-circle" class="ollama-status-div">
+                <img id="ollama-status" src="chrome-extension://${chrome.runtime.id}/src/img/ollama.png" alt="Ollama Logo" style="width: 20px; height: 20px;">
+            </div>
+        </div>
         <div id="summary-output"></div>
     </div>
 `;
@@ -106,12 +111,28 @@ const sidebarCSS = `
         width: 30%;
     }
 
-    
-    
-    
     #ollama-sidebar #verbose-slider {
         width: 100%;
         accent-color: #76b900;
+    }
+
+    #ollama-sidebar .actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+    }
+
+    #ollama-sidebar .ollama-status-div {
+        background-color: #aaa;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+    }
+
+    #ollama-sidebar .actions #ollama-status {
+        transition: background-color 0.3s ease;
+        transform: translate(0px, 3px);
     }
         
     #ollama-sidebar #summarize-button {
@@ -275,6 +296,26 @@ const injectSidebar = () => {
             fetchSummary(document.body.innerText || '', verboseLevel);
         }
     });
+
+    // Add loop to check if the ollama server is running
+    const ollamaStatus = document.getElementById('status-circle');
+    setInterval(async () => {
+        try {
+            const response = await fetch('http://localhost:11434/', {"method": "GET"});
+            if (response.ok) {
+                ollamaStatus.style.backgroundColor = '#76b900'; // Green
+                //hover text
+                ollamaStatus.title = 'Ollama is running';
+            } else {
+                ollamaStatus.style.backgroundColor ='#ffaa00'; // Yellow
+                //hover text
+                ollamaStatus.title = 'Ollama is not running';
+            }
+        } catch (error) {
+            ollamaStatus.style.backgroundColor = '#ff0000'; // Red
+            //hover text
+            ollamaStatus.title = 'Ollama is not running';        }
+    }, 1000); // Check every 5 seconds
 }
 
 // toggle the sidebar on message from background script

@@ -49,9 +49,28 @@ This project is a Chrome extension that summarizes the current web page using a 
 
 ## Ollama
 
-  When running Ollama locally you must modify the 
-OLLAMA_ORIGINS environment variable to OLLAMA_ORIGINS=*.   Your format for the environment variable may vary.   Ollama needs to be run via "Ollama serve" with the CORS environment variable set as opposed to the intance that gets instantiated at startup.    Stop the default instance, load the env variable mentioned above and run "ollama serve".    Pre-reqs are that you have loaded a working LLM model into Ollama. 
+  To ensure the browser does not encounter CORS issues when using Ollama, set the `OLLAMA_ORIGINS=*` environment variable before running the Ollama server. This allows the server to accept requests from any origin.
+
+  Example:
+
+  ```bash
+  export OLLAMA_ORIGINS=*
+  ollama serve
+  ```
+
+  OR 
+
+  ```
+  OLLAMA_ORIGINS=* ollama serve
+  ```
+
+  This configuration is essential for the Chrome extension to communicate with the local Ollama deployment seamlessly.
+
+## Credits
+
+This project uses the [Showdown](https://github.com/showdownjs/showdown) library for converting Markdown to HTML. Showdown is an open-source JavaScript library licensed under the MIT License.
 
 ## License
 
 This project is licensed under the MIT License.
+

@@ -1,3 +1,5 @@
+// import showdown from './lib/showdown-2.1.0/dist/showdown.min.js'
+
 const sidebarHTML = `
     <div>
         <div class="sidebar-header">
@@ -32,6 +34,7 @@ const sidebarCSS = `
         right: 0;
         width: 30%;
         min-width: 300px;
+        max-width: 600px;
         height: 100%;
         z-index: 9999;
         box-shadow: -2px 0 5px rgba(0,0,0,0.5);
@@ -73,7 +76,8 @@ const sidebarCSS = `
 
     #ollama-sidebar .buttons {
         display: flex;
-        justify-content: space-between;
+        justify-content: none;
+        align-items: center;
         margin-top: 10px;
     }
 
@@ -108,24 +112,92 @@ const sidebarCSS = `
         padding-top: 10px;
     }
 
+    #ollama-sidebar #verbose-slider {
+        width: 100%;
+        accent-color: #76b900;
+    }
+
     #ollama-sidebar #summary-output {
         background-color: #fff;
         border: 1px solid #ccc;
         padding: 10px;
         margin-top: 10px;
-        min-height: 30vh;
-        max-height: 30vh;
+        min-height: 60vh;
+        max-height: 60vh;
         overflow-y: auto;
         font-family: 'Arial', sans-serif;
-        font-size: 14px;
+        font-size: 11px;
         text-align: left;
     }
 
-    #ollama-sidebar #verbose-slider {
-        width: 100%;
-        accent-color: #76b900;
+    #ollama-sidebar #summary-output h1 {
+        ont-family: 'Arial', sans-serif;
+        font-size: 24px;
+        font-weight: bold;
+        margin: 10px 0;
+        color: #333;
+    }
+
+    #ollama-sidebar #summary-output h2 {
+        font-family: 'Arial', sans-serif;
+        font-size: 20px;
+        font-weight: bold;
+        margin: 8px 0;
+        color: #444;
+    }
+
+    #ollama-sidebar #summary-output h3 {
+        font-family: 'Arial', sans-serif;
+        font-size: 18px;
+        font-weight: bold;
+        margin: 6px 0;
+        color: #555;
+    }
+
+    #ollama-sidebar #summary-output h4 {
+        font-family: 'Arial', sans-serif;
+        font-size: 16px;
+        font-weight: bold;
+        margin: 4px 0;
+        color: #666;
+    }
+
+    #ollama-sidebar #summary-output p {
+        font-family: 'Arial', sans-serif;
+        font-size: 14px;
+        line-height: 1.5;
+        margin: 8px 0;
+        color: #000;
+    }
+
+    #ollama-sidebar #summary-output ul {
+        font-family: 'Arial', sans-serif;
+        margin: 10px 0;
+        padding-left: 20px;
+        list-style-type: disc;
+    }
+
+    #ollama-sidebar #summary-output ol {
+        font-family: 'Arial', sans-serif;
+        margin: 10px 0;
+        padding-left: 20px;
+        list-style-type: decimal;
+    }
+
+    #ollama-sidebar #summary-output li {
+        font-family: 'Arial', sans-serif;
+        font-size: 14px;
+        line-height: 1.5;
+        margin: 4px 0;
+        color: #000;
     }
 `;
+
+const convertedContent = async (content) => {
+    const converter = new showdown.Converter();
+    const html = converter.makeHtml(content);
+    return html;
+}
 
 const injectSidebar = () => {
     // Check if the sidebar already exists
@@ -243,14 +315,16 @@ async function fetchSummary(content, verboseLevel) {
                         
                         Verbosity Level:
                         
-                        A level close to 0 should yield a brief digest.
+                            A level close to 0 should yield a brief digest.
+                            
+                            A level close to 100 should provide a more detailed summary.
                         
-                        A level close to 100 should provide a more detailed summary.
-                        
-                        The default verbosity is 50.
-                        (Note: Do not mention or refer to the verbosity level in the response.)
+                            The default verbosity is 50.
+                            (Note: Do not mention or refer to the verbosity level in the response.)
                         
                         Structure the summary to be easily digestible, using bullet points or lists when necessary.
+
+                        Respond using markdown formatting for better readability.
                         
                         For more detailed summaries, break up information into clear sections for better readability.
                         
@@ -276,15 +350,16 @@ async function fetchSummary(content, verboseLevel) {
         const outputElement = document.getElementById('summary-output');
         outputElement.innerText = ''; // Clear previous output
 
+        let message = "";
+
         let done = false;
         while (!done) {
             const { value, done: readerDone } = await reader.read();
             done = readerDone;
-
+            
             if (value) {
                 const chunk = decoder.decode(value, { stream: true });
-                // console.log('Chunk received:', chunk);
-
+                
                 // Process each line of the chunk
                 const lines = chunk.split('\n');
                 for (const line of lines) {
@@ -292,7 +367,10 @@ async function fetchSummary(content, verboseLevel) {
                         try {
                             const parsedLine = JSON.parse(line);
                             if (parsedLine.message && parsedLine.message.content) {
-                                outputElement.innerText += parsedLine.message.content; // Append streamed text
+                                message += parsedLine.message.content; // Append streamed text
+                                
+                                const convertedMessage = await convertedContent(message); // Convert to HTML
+                                outputElement.innerHTML = convertedMessage; // Append streamed text
                             }
                         } catch (error) {
                             console.warn('Failed to parse line:', line, error);

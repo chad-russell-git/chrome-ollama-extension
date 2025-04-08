@@ -14,7 +14,7 @@
   "content_scripts": [
     {
       "matches": ["https://*/*", "http://*/*"],
-      "js": ["src/content.js"],
+      "js": ["src/content.js", "src/lib/showdown-2.1.0/dist/showdown.min.js"],
       "run_at": "document_start"
     }
   ],
@@ -32,7 +32,10 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["src/fonts/*", "fonts/*"],
+      "resources": [
+        "src/fonts/*", "fonts/*",
+        "src/lib/showdown-2.1.0/dist/showdown.min.js"
+      ],
       "matches": ["<all_urls>"]
     }
   ]

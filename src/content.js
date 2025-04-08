@@ -3,7 +3,7 @@
 const sidebarHTML = `
     <div>
         <div class="sidebar-header">
-            <button id="close-sidebar">X</button>
+            <button id="close-sidebar"><img src="chrome-extension://${chrome.runtime.id}/src/img/x.png" alt="Ollama Logo" style="width: 20px; height: 20px;"></button>
             <button id="info-button" onClick="window.open('https://github.com/chad-russell-git/chrome-ollama-extension/', '_blank');">i</button>
             <h2>Page Summarizer</h2>
         </div>
@@ -28,11 +28,7 @@ const sidebarHTML = `
 `;
 
 const sidebarCSS = `
-    @font-face {
-        font-family: 'HandelGothic';
-        src: url("chrome-extension://${chrome.runtime.id}/src/fonts/Handel Gothic Regular.woff") format('woff');
-    }
-
+    @import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
     #ollama-sidebar {
         background-color:rgb(0, 0, 0);
         background-image: linear-gradient(to bottom, rgb(0, 0, 0), rgb(46, 46, 46));
@@ -51,7 +47,7 @@ const sidebarCSS = `
     }
 
     #ollama-sidebar #close-sidebar {
-        background-color:rgb(21, 138, 0);
+        background-color: rgba(0,0,0,0);
         position: absolute;
         left: 3px;
         top: 3px;
@@ -61,22 +57,26 @@ const sidebarCSS = `
         font-size: 10px;
         width: 20px;
         height: 20px;
-        font-family: 'HandelGothic', sans-serif;
+        font-family: 'Open Sans', sans-serif;
         font-weight: bold;
-        border-radius: 50%;
+        border-radius: 5px;
         text-align: center;
+    }
+
+    #ollama-sidebar #close-sidebar img {
+        transform: translate(-5px, 0px);
     }
 
     
     #ollama-sidebar #info-button {
-        background-color:rgb(21, 138, 0);
+        background-color:rgba(0, 0, 0, 0);
+        color: #76b900;
         position: absolute;
         right: 3px;
         top: 3px;
-        color: white;
         border: none;
         cursor: pointer;
-        font-size: 10px;
+        font-size: 12px;
         width: 20px;
         height: 20px;
         font-family: sans-serif;
@@ -107,7 +107,7 @@ const sidebarCSS = `
         margin: 5px;
         cursor: pointer;
         font-size: 16px;
-        font-family: 'HandelGothic', sans-serif;
+        font-family: 'Open Sans', sans-serif;
         width: 30%;
     }
 
@@ -144,21 +144,21 @@ const sidebarCSS = `
         cursor: pointer;
         font-size: 16px;
         margin-top: 5px;
-        font-family: 'HandelGothic', sans-serif;
+        font-family: 'Open Sans', sans-serif;
         align-self: left;
     }
 
     #ollama-sidebar h2 {
         color: #76b900;
-        font-family: 'HandelGothic', sans-serif;
-        font-size: 24px;
+        font-family: 'Open Sans', sans-serif;
+        font-size: 16px;
         margin-bottom: 10px;
         margin-top: 0px;
     }
 
     #ollama-sidebar h3 {
         color: #fff;
-        font-family: 'HandelGothic', sans-serif;
+        font-family: 'Open Sans', sans-serif;
         font-size: 18px;
         align: left;
         margin-top: 0px;

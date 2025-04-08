@@ -7,12 +7,17 @@ const sidebarHTML = `
             <button id="info-button" onClick="window.open('https://github.com/chad-russell-git/chrome-ollama-extension/', '_blank');">i</button>
             <h2>Page Summarizer</h2>
         </div>
-        <div class="buttons">
-            <button id="summarize-button">Summarize</button>
-            <button id="clipboard-button">From Clipboard</button>
+        <div class="settings">
+            <select id="input-source">
+                <option value="web-page">From Web Page</option>
+                <option value="clipboard">From Clipboard</option>
+            </select>
+            <div class="slider-container"> 
+                <h3>Verbose Slider</h3>
+                <input type="range" id="verbose-slider" min="0" max="100" value="50">
+            </div>
         </div>
-        <h3>Verbose Slider</h3>
-        <input type="range" id="verbose-slider" min="0" max="100" value="50">
+        <button id="summarize-button">Summarize</button>
         <div id="summary-output"></div>
     </div>
 `;
@@ -57,6 +62,7 @@ const sidebarCSS = `
         text-align: center;
     }
 
+    
     #ollama-sidebar #info-button {
         background-color:rgb(21, 138, 0);
         position: absolute;
@@ -73,24 +79,52 @@ const sidebarCSS = `
         border-radius: 50%;
         text-align: center;
     }
-
-    #ollama-sidebar .buttons {
-        display: flex;
-        justify-content: none;
+    
+    #ollama-sidebar .settings {
+        width: 100%;
+        display: inline-flex;
+        justify-content: space-between;
         align-items: center;
-        margin-top: 10px;
+        margin-top: 0;
+    }
+        
+    #ollama-sidebar .settings * {
+        width: 100%;
+        align-items: center;
+        margin: 0px 5px;
     }
 
-    #ollama-sidebar #summarize-button,#clipboard-button {
-        background-color: #76b900;
+    #ollama-sidebar select {
+        background-color: rgb(21, 138, 0);
         color: white;
         border: none;
         padding: 10px;
         margin: 5px;
         cursor: pointer;
         font-size: 16px;
+        font-family: 'HandelGothic', sans-serif;
+        width: 30%;
+    }
+
+    
+    
+    
+    #ollama-sidebar #verbose-slider {
+        width: 100%;
+        accent-color: #76b900;
+    }
+        
+    #ollama-sidebar #summarize-button {
+        background-color: #76b900;
+        color: white;
+        border: none;
+        padding: 10px 40px;
+        margin: 5px;
+        cursor: pointer;
+        font-size: 16px;
         margin-top: 5px;
         font-family: 'HandelGothic', sans-serif;
+        align-self: left;
     }
 
     #ollama-sidebar h2 {
@@ -112,10 +146,6 @@ const sidebarCSS = `
         padding-top: 10px;
     }
 
-    #ollama-sidebar #verbose-slider {
-        width: 100%;
-        accent-color: #76b900;
-    }
 
     #ollama-sidebar #summary-output {
         background-color: #fff;
@@ -135,7 +165,7 @@ const sidebarCSS = `
         font-size: 24px;
         font-weight: bold;
         margin: 10px 0;
-        color: #333;
+        color: #000;
     }
 
     #ollama-sidebar #summary-output h2 {
@@ -143,7 +173,7 @@ const sidebarCSS = `
         font-size: 20px;
         font-weight: bold;
         margin: 8px 0;
-        color: #444;
+        color: #000;
     }
 
     #ollama-sidebar #summary-output h3 {
@@ -151,7 +181,7 @@ const sidebarCSS = `
         font-size: 18px;
         font-weight: bold;
         margin: 6px 0;
-        color: #555;
+        color: #000;
     }
 
     #ollama-sidebar #summary-output h4 {
@@ -159,7 +189,7 @@ const sidebarCSS = `
         font-size: 16px;
         font-weight: bold;
         margin: 4px 0;
-        color: #666;
+        color: #000;
     }
 
     #ollama-sidebar #summary-output p {
@@ -229,23 +259,20 @@ const injectSidebar = () => {
         //get the verbose level from the slider
         const verboseSlider = document.getElementById('verbose-slider');
         const verboseLevel = verboseSlider.value;
-        fetchSummary(document.body.innerText || '', verboseLevel);
-    });
 
-
-    const clipboardButton = document.getElementById('clipboard-button');
-    clipboardButton.addEventListener('click', async () => {
-        try {
-            const text = await navigator.clipboard.readText();
-            console.log('Clipboard content:', text);
-
-            // Get the verbose level from the slider
-            const verboseSlider = document.getElementById('verbose-slider');
-            const verboseLevel = verboseSlider.value;
-
-            fetchSummary(text, verboseLevel);
-        } catch (error) {
-            console.error('Failed to read clipboard:', error);
+        // get the input source from the select element
+        const inputSource = document.getElementById('input-source').value;
+        console.log('Input source:', inputSource); // Debug log
+        if (inputSource === 'clipboard') {
+            navigator.clipboard.readText().then((text) => {
+                fetchSummary(text, verboseLevel);
+            }).catch((error) => {
+                console.error('Failed to read clipboard:', error); // Debug log
+            });
+        } else if (inputSource === 'web-page') {
+            // If the input source is the web page, fetch the content from the body
+            console.log('Fetching content from web page...'); // Debug log
+            fetchSummary(document.body.innerText || '', verboseLevel);
         }
     });
 }
@@ -262,34 +289,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
 });
 
-//listener for activating extension
-console.log('Content script loaded');
-
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    console.log('Message received in content script:', request);
-
-    if (request.action === 'getContent') {
-        try {
-            const content = document.body.innerText || '';
-            console.log('Extracted content:', content);
-
-            if (!content) {
-                console.warn('No content extracted from the page.');
-            }
-
-            sendResponse({ content }); // Send the response
-        } catch (error) {
-            console.error('Error extracting content:', error);
-            sendResponse({ error: 'Failed to extract content' });
-        }
-    }
-
-    return true; // Indicate that the response will be sent asynchronously
-});
-
 async function fetchSummary(content, verboseLevel) {
-    console.log('fetchSummary called with content:', content); // Debug log
-    console.log('fetchSummary called with verboseLevel:', verboseLevel); // Debug log
+    console.log('fetchSummary called with web content.'); // Debug log
+    console.log('fetchSummary called with verboseLevel: ', verboseLevel); // Debug log
     try {
         // Resolve the Ollama URL from storage
         const ollamaUrl = await new Promise((resolve) => {
@@ -313,18 +315,19 @@ async function fetchSummary(content, verboseLevel) {
 
                         Provide concise and clear summaries.
                         
-                        Verbosity Level:
+                        Length Level:
                         
-                            A level close to 0 should yield a brief digest.
+                            A level close to 0/100 should yield a brief digest.
                             
-                            A level close to 100 should provide a more detailed summary.
+                            A level close to 100/100 should provide a more detailed summary.
                         
-                            The default verbosity is 50.
-                            (Note: Do not mention or refer to the verbosity level in the response.)
+                            The default length is 50/100. So anything smaller than 50 should be a shorter summary, and anything larger than 50 should be a longer summary.
+                            (Note: Do not mention or refer to the length level in the response.)
                         
                         Structure the summary to be easily digestible, using bullet points or lists when necessary.
 
                         Respond using markdown formatting for better readability.
+                            Do no use any header smaller than ##.
                         
                         For more detailed summaries, break up information into clear sections for better readability.
                         
@@ -332,7 +335,7 @@ async function fetchSummary(content, verboseLevel) {
                     },
                     {
                         role: 'user',
-                        content: 'summarize the following content with a verboseness level of ' + verboseLevel + "/100  -  " + content
+                        content: 'summarize the following content with a length level of ' + verboseLevel + "/100  -  " + content
                     }
                 ]
             })

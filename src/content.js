@@ -13,7 +13,7 @@ const sidebarHTML = `
                 <option value="clipboard">From Clipboard</option>
             </select>
             <div class="slider-container"> 
-                <h3>Verbose Slider</h3>
+                <h3>Response Length</h3>
                 <input type="range" id="verbose-slider" min="0" max="100" value="50">
             </div>
         </div>

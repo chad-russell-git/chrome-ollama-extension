@@ -6,8 +6,10 @@ const sidebarHTML = `
         </div>
         <div class="buttons">
             <button id="summarize-button">Summarize</button>
-            <button id="clipboard-button">From ClipBoard</button>
+            <button id="clipboard-button">From Clipboard</button>
         </div>
+        <h3>Verbose Slider</h3>
+        <input type="range" id="verbose-slider" min="0" max="100" value="50">
         <div id="summary-output"></div>
     </div>
 `;
@@ -19,7 +21,7 @@ const sidebarCSS = `
     }
 
     #ollama-sidebar {
-        background-color: #f4f4f4;
+        background-color:rgb(0, 0, 0);
         padding: 10px;
         border-bottom: 1px solid #ccc;
         text-align: center;
@@ -33,31 +35,57 @@ const sidebarCSS = `
     }
 
     #ollama-sidebar #close-sidebar {
-        background-color: #ff4d4d;
+        background-color:rgb(21, 138, 0);
         position: absolute;
         left: 3px;
         top: 3px;
         color: white;
         border: none;
-        padding: 5px 10px;
         cursor: pointer;
-        font-size: 16px;
+        font-size: 10px;
+        width: 20px;
+        height: 20px;
+        font-family: 'HandelGothic', sans-serif;
+        font-weight: bold;
+        border-radius: 50%;
+        text-align: center;
     }
 
-    #ollama-sidebar #summarize-button,#clipboard-button {
-        background-color: #4CAF50;
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        cursor: pointer;
-        font-size: 16px;
+    #ollama-sidebar .buttons {
+        display: flex;
+        justify-content: space-between;
         margin-top: 10px;
     }
 
+    #ollama-sidebar #summarize-button,#clipboard-button {
+        background-color: #76b900;
+        color: white;
+        border: none;
+        padding: 10px;
+        margin: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-top: 5px;
+        font-family: 'HandelGothic', sans-serif;
+    }
+
     #ollama-sidebar h2 {
+        color: #76b900;
         font-family: 'HandelGothic', sans-serif;
         font-size: 24px;
         margin-bottom: 10px;
+        margin-top: 0px;
+    }
+
+    #ollama-sidebar h3 {
+        color: #fff;
+        font-family: 'HandelGothic', sans-serif;
+        font-size: 18px;
+        align: left;
+        margin-top: 0px;
+        margin-bottom: 0px;
+        text-align: left;
+        padding-top: 10px;
     }
 
     #ollama-sidebar #summary-output {
@@ -65,12 +93,17 @@ const sidebarCSS = `
         border: 1px solid #ccc;
         padding: 10px;
         margin-top: 10px;
-        max-height: 300px;
-        min-height: 100px;
+        min-height: 30vh;
+        max-height: 30vh;
         overflow-y: auto;
         font-family: 'Arial', sans-serif;
         font-size: 14px;
         text-align: left;
+    }
+
+    #ollama-sidebar #verbose-slider {
+        width: 100%;
+        accent-color: #76b900;
     }
 `;
 
@@ -101,15 +134,24 @@ const injectSidebar = () => {
     // Add event listener to the summarize button
     const summarizeButton = document.getElementById('summarize-button');
     summarizeButton.addEventListener('click', () => {
-        fetchSummary(document.body.innerText || '')
+        //get the verbose level from the slider
+        const verboseSlider = document.getElementById('verbose-slider');
+        const verboseLevel = verboseSlider.value;
+        fetchSummary(document.body.innerText || '', verboseLevel);
     });
+
 
     const clipboardButton = document.getElementById('clipboard-button');
     clipboardButton.addEventListener('click', async () => {
         try {
             const text = await navigator.clipboard.readText();
             console.log('Clipboard content:', text);
-            fetchSummary(text);
+
+            // Get the verbose level from the slider
+            const verboseSlider = document.getElementById('verbose-slider');
+            const verboseLevel = verboseSlider.value;
+
+            fetchSummary(text, verboseLevel);
         } catch (error) {
             console.error('Failed to read clipboard:', error);
         }
@@ -163,7 +205,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true; // Indicate that the response will be sent asynchronously
 });
 
-async function fetchSummary(content) {
+async function fetchSummary(content, verboseLevel) {
     console.log('fetchSummary called with content:', content); // Debug log
     try {
         // Resolve the Ollama URL from storage
@@ -183,8 +225,12 @@ async function fetchSummary(content) {
                 model: 'llama3.2',
                 messages: [
                     {
+                        role: 'system',
+                        content: 'You are a helpful assistant that summarizes text. You will be given a verboseness level from 0 to 100. 0 means a very short one sentence summary and 100 is a long, detailed, and formatted summary. Only respond with the summary.'
+                    },
+                    {
                         role: 'user',
-                        content: 'summarize the following content - ' + content
+                        content: 'summarize the following content with a verboseness level of ' + verboseLevel + "/100  -  " + content
                     }
                 ]
             })

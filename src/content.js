@@ -30,7 +30,8 @@ const sidebarCSS = `
         position: fixed;
         top: 0;
         right: 0;
-        width: 300px;
+        width: 30%;
+        min-width: 300px;
         height: 100%;
         z-index: 9999;
         box-shadow: -2px 0 5px rgba(0,0,0,0.5);
@@ -177,16 +178,6 @@ const injectSidebar = () => {
     });
 }
 
-const main = () => {
-    // injectSidebar(); // Inject the sidebar into the page
-};
-
-// Ensure the DOM is fully loaded before running the main function
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM fully loaded and parsed');
-    main();
-});
-
 // toggle the sidebar on message from background script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'toggleSidebar') {
@@ -226,6 +217,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 async function fetchSummary(content, verboseLevel) {
     console.log('fetchSummary called with content:', content); // Debug log
+    console.log('fetchSummary called with verboseLevel:', verboseLevel); // Debug log
     try {
         // Resolve the Ollama URL from storage
         const ollamaUrl = await new Promise((resolve) => {
@@ -245,7 +237,24 @@ async function fetchSummary(content, verboseLevel) {
                 messages: [
                     {
                         role: 'system',
-                        content: 'You are a helpful assistant that summarizes text. You will be given a verboseness level from 0 to 100. 0 means a very short one sentence summary and 100 is a long, detailed, and formatted summary. Only respond with the summary.'
+                        content: `You are an assistant that summarizes text from a web page.
+
+                        Provide concise and clear summaries.
+                        
+                        Verbosity Level:
+                        
+                        A level close to 0 should yield a brief digest.
+                        
+                        A level close to 100 should provide a more detailed summary.
+                        
+                        The default verbosity is 50.
+                        (Note: Do not mention or refer to the verbosity level in the response.)
+                        
+                        Structure the summary to be easily digestible, using bullet points or lists when necessary.
+                        
+                        For more detailed summaries, break up information into clear sections for better readability.
+                        
+                        Ensure the summary is in the same language as the input text.`,
                     },
                     {
                         role: 'user',
@@ -274,7 +283,7 @@ async function fetchSummary(content, verboseLevel) {
 
             if (value) {
                 const chunk = decoder.decode(value, { stream: true });
-                console.log('Chunk received:', chunk);
+                // console.log('Chunk received:', chunk);
 
                 // Process each line of the chunk
                 const lines = chunk.split('\n');

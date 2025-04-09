@@ -1,9 +1,45 @@
-<div id="sidebar">
+<div>
     <div class="sidebar-header">
-        <h2>Sidebar</h2>
-        <button id="close-sidebar">X</button>
+        <button id="close-sidebar">></button>
+        <button id="info-button" onClick="window.open('https://github.com/chad-russell-git/chrome-ollama-extension/', '_blank');">i</button>
+        <div class="tabs">
+            <button id="summary-toggle">Page Summarizer</button>
+            <button id="web-toggle">Web Digest</button>
+        </div>
     </div>
-    <div class="sidebar-content">
-        <p>This is the sidebar content.</p>
+    <div id="summary-tab">
+        <div class="settings">
+            <select id="input-source">
+                <option value="web-page">From Web Page</option>
+                <option value="clipboard">From Clipboard</option>
+            </select>
+            <div class="slider-container"> 
+                <h3>Response Length</h3>
+                <input type="range" id="verbose-slider" min="0" max="100" value="50">
+            </div>
+        </div>
+        <div class="actions">
+            <button id="summarize-button">Summarize</button>
+            <div id="status-circle" class="ollama-status-div">
+                <img id="ollama-status" src="chrome-extension://${chrome.runtime.id}/src/img/ollama.png" alt="Ollama Logo" style="width: 20px; height: 20px;">
+                <img id="ollama-status-loading" src="chrome-extension://${chrome.runtime.id}/src/img/cloud.gif" alt="Loading GIF">   
+            </div>
+        </div>
+        <div id="summary-output"></div>
+    
+        <form id="ollama-chat-form" class="page-chat">
+            <input type="text" id="ollama-chat-input" placeholder="Chat with the page..." />
+            <button type="submit" id="ollama-chat-submit">Send</button>
+        </form>
     </div>
+    <div id="digest-tab" style="display: none;">
+        <div class="settings">
+            <form id="digest-form" class="digest-form">
+                <input type="text" id="digest-input" placeholder="Search the web for..." />
+                <button type="submit" id="digest-submit">Send</button>
+            </form>
+        </div>
+        <div id="digest-output"></div>
+    </div>
+
 </div>

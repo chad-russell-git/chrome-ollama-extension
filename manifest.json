@@ -35,7 +35,8 @@
       "resources": [
         "src/fonts/*", "fonts/*",
         "src/lib/showdown-2.1.0/dist/showdown.min.js",
-        "src/img/*"
+        "src/img/*",
+        "src/sidebar/*"
       ],
       "matches": ["<all_urls>"]
     }

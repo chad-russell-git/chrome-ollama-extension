@@ -120,28 +120,43 @@ const injectSidebar = async () => {
     });
 
     // Add loop to check if the ollama server is running
-    const ollamaStatus = document.getElementById('status-circle');
+    const ollamaStatus = document.getElementById('status-circle');  //make sure gives a negative response (might need a rollback)
     statusInterval = setInterval(async () => {
-        try {
-            const response = await fetch('http://localhost:11434/', {"method": "GET"});
-            if (response.ok) {
-                ollamaStatus.style.backgroundColor ='#00aa00'; // Green
-                //hover text
-                ollamaStatus.title = 'Ollama is running';
-                // Delete the loading gif
-                const loadingGif = document.getElementById('ollama-status-loading');
-                if (loadingGif) {
-                    loadingGif.remove();
-                }
-            } else {
-                ollamaStatus.style.backgroundColor ='#ffaa00'; // Yellow
-                //hover text
-                ollamaStatus.title = 'Ollama is not running';
+        const proxyFetch = async (url, options = {}) => {
+            return new Promise((resolve, reject) => {
+                chrome.runtime.sendMessage(
+                    {
+                        action: 'proxyRequest',
+                        url,
+                        method: options.method,
+                        headers: options.headers,
+                        body: options.body,
+                    },
+                    (response) => {
+                        if (response.success) {
+                            resolve(new Response(response.data));
+                        } else {
+                            reject(new Error(response.error));
+                        }
+                    }
+                );
+            });
+        };
+        const response = await proxyFetch('http://localhost:11434/', { method: 'GET' });
+        const responseText = await response.text();
+        console.log(response);
+        if (responseText.includes('Ollama is running')) {
+            ollamaStatus.style.backgroundColor = '#00aa00'; // Green
+            ollamaStatus.title = 'Ollama is running';
+            // Delete the loading gif
+            const loadingGif = document.getElementById('ollama-status-loading');
+            if (loadingGif) {
+                loadingGif.remove();
             }
-        } catch (error) {
-            ollamaStatus.style.backgroundColor = '#ff0000'; // Red
-            //hover text
-            ollamaStatus.title = 'Ollama is not running';        }
+        } else {
+            ollamaStatus.style.backgroundColor = '#dd0000'; // Red
+            ollamaStatus.title = 'Unable to connect to Ollama';
+        }
     }, 2000); // Check every 2 seconds
 }
 
@@ -157,9 +172,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
     }
 });
-
-
-
 
 
 async function fetchSummary(content, verboseLevel) {

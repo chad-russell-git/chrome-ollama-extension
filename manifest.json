@@ -6,7 +6,11 @@
   "permissions": [
     "activeTab",
     "scripting",
-    "storage"
+    "storage",
+    "http://localhost/*"
+  ],
+  "host_permissions": [
+    "http://localhost/11434/*"
   ],
   "background": {
     "service_worker": "src/background.js"

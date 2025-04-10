@@ -1,4 +1,17 @@
+@keyframes slideIn {
+    0% {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
 #ollama-sidebar {
+    animation: slideIn 0.5s forwards;
+
     background-color:rgb(0, 0, 0);
     background-image: linear-gradient(to bottom, rgb(0, 0, 0), rgb(46, 46, 46));
     padding: 10px;
@@ -11,7 +24,7 @@
     min-width: 300px;
     max-width: 600px;
     height: 100%;
-    z-index: 9999;
+    z-index: 99999;
     box-shadow: -2px 0 5px rgba(0,0,0,0.5);
 }
 
@@ -19,7 +32,6 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 10px;
 }
 
 #ollama-sidebar .page-chat input {
@@ -90,14 +102,13 @@
     display: inline-flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 0;
+    margin-top: 10px;
 }
     
 #ollama-sidebar .settings * {
     width: 100%;
     align-items: center;
     margin: 0px 5px;
-    margin-top: -10px;
 }
 
 #ollama-sidebar select {

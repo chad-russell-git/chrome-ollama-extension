@@ -1,9 +1,12 @@
+// converting markdown to html
 const convertedContent = async (content) => {
     const converter = new showdown.Converter();
     const html = converter.makeHtml(content);
     return html;
 }
 
+
+// hold the ping setInterval to cancel on sidebar close
 statusInterval = null;
 
 const injectSidebar = async () => {
@@ -54,17 +57,27 @@ const injectSidebar = async () => {
     // Add event listener to the tab buttons
     const pageTabButton = document.getElementById('summary-toggle');
     const chatTabButton = document.getElementById('web-toggle');
+    const configTabButton = document.getElementById('config-toggle');
     const pageTabContent = document.getElementById('summary-tab');
     const chatTabContent = document.getElementById('digest-tab');
+    const configTabContent = document.getElementById('config-tab');
     pageTabButton.addEventListener('click', () => {
         console.log('Page tab clicked');
         pageTabContent.style.display = 'block';
         chatTabContent.style.display = 'none';
+        configTabContent.style.display = 'none';
     });
     chatTabButton.addEventListener('click', () => {
         console.log('Chat tab clicked');
         chatTabContent.style.display = 'block';
         pageTabContent.style.display = 'none';
+        configTabContent.style.display = 'none';
+    });
+    configTabButton.addEventListener('click', () => {
+        console.log('Config tab clicked');
+        configTabContent.style.display = 'block';
+        pageTabContent.style.display = 'none';
+        chatTabContent.style.display = 'none';
     });
 
     // Add event listener to the summarize button (handle content selection)
@@ -119,9 +132,44 @@ const injectSidebar = async () => {
         }
     });
 
+    const urlSaveButton = document.getElementById('save-url');
+    const ollamaUrlInput = document.getElementById('ollama-url');
+    // Set the default value of the input field
+    ollamaUrlInput.value = await new Promise((resolve) => {
+        chrome.storage.sync.get(['ollamaUrl'], (result) => {
+            resolve(result.ollamaUrl || "http://localhost:11434");
+        });
+    });
+    // Add event listener to the save button (handle Ollama URL)
+    urlSaveButton.addEventListener('click', () => {
+        const ollamaUrl = ollamaUrlInput.value;
+        chrome.storage.sync.set({ ollamaUrl }, () => {
+            console.log('Ollama URL saved:', ollamaUrl);
+            alert('Ollama URL saved successfully!');
+        });
+    });
+
+    const modelSaveButton = document.getElementById('save-model');
+    const modelInput = document.getElementById('ollama-model');
+    // Set the default value of the input field
+    modelInput.value = await new Promise((resolve) => {
+        chrome.storage.sync.get(['ollamaModel'], (result) => {
+            resolve(result.ollamaModel || "llama3.2");
+        });
+    });
+    // Add event listener to the save button (handle Ollama model)
+    modelSaveButton.addEventListener('click', () => {
+        const ollamaModel = modelInput.value;
+        chrome.storage.sync.set({ ollamaModel }, () => {
+            console.log('Ollama model saved:', ollamaModel);
+            alert('Ollama model saved successfully!');
+        });
+    });
+
     // Add loop to check if the ollama server is running
     const ollamaStatus = document.getElementById('status-circle');  //make sure gives a negative response (might need a rollback)
     statusInterval = setInterval(async () => {
+
         const proxyFetch = async (url, options = {}) => {
             return new Promise((resolve, reject) => {
                 chrome.runtime.sendMessage(
@@ -142,7 +190,13 @@ const injectSidebar = async () => {
                 );
             });
         };
-        const response = await proxyFetch('http://localhost:11434/', { method: 'GET' });
+        // Resolve the Ollama URL from storage
+        const ollamaUrl = await new Promise((resolve) => {
+            chrome.storage.sync.get(['ollamaUrl'], (result) => {
+                resolve(result.ollamaUrl || "http://localhost:11434");
+            });
+        });
+        const response = await proxyFetch(ollamaUrl, { method: 'GET' });
         const responseText = await response.text();
         console.log(response);
         if (responseText.includes('Ollama is running')) {
@@ -181,18 +235,25 @@ async function fetchSummary(content, verboseLevel) {
         // Resolve the Ollama URL from storage
         const ollamaUrl = await new Promise((resolve) => {
             chrome.storage.sync.get(['ollamaUrl'], (result) => {
-                resolve(result.ollamaUrl || 'http://localhost:11434/api/chat');
+                resolve(result.ollamaUrl || "http://localhost:11434");
+            });
+        });
+
+        // Resolve the Ollama model from storage
+        const ollamaModel = await new Promise((resolve) => {
+            chrome.storage.sync.get(['ollamaModel'], (result) => {
+                resolve(result.ollamaModel || "llama3.2");
             });
         });
 
         // Make the fetch request
-        const response = await fetch(ollamaUrl, {
+        const response = await fetch(ollamaUrl + '/api/chat', {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                model: 'llama3.2',
+                model: ollamaModel,
                 messages: [
                     {
                         role: 'system',
@@ -285,18 +346,24 @@ async function fetchPageChat(content, userInput, verboseLevel) {
         // Resolve the Ollama URL from storage
         const ollamaUrl = await new Promise((resolve) => {
             chrome.storage.sync.get(['ollamaUrl'], (result) => {
-                resolve(result.ollamaUrl || 'http://localhost:11434/api/chat');
+                resolve(result.ollamaUrl || "http://localhost:11434");
             });
         });
 
-        // Make the fetch request
-        const response = await fetch(ollamaUrl, {
+        // Resolve the Ollama model from storage
+        const ollamaModel = await new Promise((resolve) => {
+            chrome.storage.sync.get(['ollamaModel'], (result) => {
+                resolve(result.ollamaModel || "llama3.2");
+            });
+        });
+
+        const response = await fetch(ollamaUrl + '/api/chat', {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                model: 'llama3.2',
+                model: ollamaModel,
                 messages: [
                     {
                         role: 'system',

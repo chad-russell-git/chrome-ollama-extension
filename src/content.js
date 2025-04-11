@@ -57,27 +57,13 @@ const injectSidebar = async () => {
 
     // Add event listener to the tab buttons
     const pageTabButton = document.getElementById('summary-toggle');
-    const chatTabButton = document.getElementById('web-toggle');
     const configTabButton = document.getElementById('config-toggle');
     const pageTabContent = document.getElementById('summary-tab');
-    const chatTabContent = document.getElementById('digest-tab');
     const configTabContent = document.getElementById('config-tab');
     pageTabButton.addEventListener('click', () => {
         console.log('Page tab clicked');
         pageTabContent.style.display = 'block';
         pageTabButton.style.backgroundColor = '#76b600'; 
-        chatTabContent.style.display = 'none';
-        chatTabButton.style.backgroundColor = '#218500'; 
-        configTabContent.style.display = 'none';
-        configTabButton.style.backgroundColor = '#218500';
-
-    });
-    chatTabButton.addEventListener('click', () => {
-        console.log('Chat tab clicked');
-        chatTabContent.style.display = 'block';
-        chatTabButton.style.backgroundColor = '#76b600';
-        pageTabContent.style.display = 'none';
-        pageTabButton.style.backgroundColor = '#218500';
         configTabContent.style.display = 'none';
         configTabButton.style.backgroundColor = '#218500';
     });
@@ -87,8 +73,6 @@ const injectSidebar = async () => {
         configTabButton.style.backgroundColor = '#76b600';
         pageTabContent.style.display = 'none';
         pageTabButton.style.backgroundColor = '#218500';
-        chatTabContent.style.display = 'none';
-        chatTabButton.style.backgroundColor = '#218500';
     });
 
     // Add event listener to the summarize button (handle content selection)
@@ -127,19 +111,6 @@ const injectSidebar = async () => {
             console.log("Length of page content: ", pageContent.length);
             fetchPageChat(pageContent, userInput, verboseLevel);
             chatInput.value = ''; // Clear the input field after sending
-        }
-    });
-
-    // Add event listener to the web digest form (handle web digest input)
-    const webDigestForm = document.getElementById('digest-form');
-    webDigestForm.addEventListener('submit', (event) => {
-        event.preventDefault(); // Prevent the form from submitting
-        const digestInput = document.getElementById('digest-input');
-        const query = digestInput.value;
-
-        if (query) {
-            fetchWebDigest(query);
-            digestInput.value = ''; // Clear the input field after sending
         }
     });
 
@@ -277,6 +248,8 @@ async function fetchSummary(content, verboseLevel) {
                             A level close to 0/100 should yield a brief digest.
                             
                             A level close to 100/100 should provide a more detailed summary.
+
+                            The length level does not define the number of words directly in the summary, just the relative score of how long the summary is based on the web page content.
                         
                             The default length is 50/100. So anything smaller than 50 should be a shorter summary, and anything larger than 50 should be a longer summary.
                             (Note: Do not mention or refer to the length level in the response.)
@@ -389,6 +362,8 @@ async function fetchPageChat(content, userInput, verboseLevel) {
                             A level close to 0/100 should yield a brief digest.
                             
                             A level close to 100/100 should provide a more detailed response.
+
+                            The length level does not define the number of words directly in the summary, just the relative score of how long the summary is based on the web page content.
                         
                             The default length is 50/100. So anything smaller than 50 should be a shorter summary, and anything larger than 50 should be a longer summary.
                             (Note: Do not mention or refer to the length level in the response.)
@@ -464,18 +439,4 @@ async function fetchPageChat(content, userInput, verboseLevel) {
         console.error('Error in fetchSummary:', error.message);
         summaryOutput.textContent = 'Error: ' + error.message;
     }
-}
-
-fetchWebDigest = async (query) => {
-    console.log('fetchWebDigest called with query:', query);
-    
-    await fetch("https://api.duckduckgo.com/?q=" + query + "&format=json&redirected=1") // LOOK AT https://langsearch.com/overview
-        .then(response => response.text())
-        .then(data => {
-            const jsonData = JSON.parse(data);
-            console.log(jsonData);
-            const outputDiv = document.getElementById('digest-output');
-            outputDiv.innerText = data; // Clear previous output
-        })
-
 }

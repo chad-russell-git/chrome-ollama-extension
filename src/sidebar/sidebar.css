@@ -231,8 +231,7 @@
     border: 1px solid #ccc;
     padding: 10px;
     margin-top: 10px;
-    min-height: 60vh;
-    max-height: 60vh;
+    height: 60vh;
     overflow-y: auto;
     font-family: 'Arial', sans-serif;
     font-size: 11px;
@@ -240,6 +239,15 @@
     color: white;
     border: none;
 }
+
+#ollama-sidebar #summary-output {
+    height: calc(100vh - 200px);
+}
+
+#ollama-sidebar #digest-output {
+    height: calc(100vh - 200px);
+}
+
 
 #ollama-sidebar #summary-output * {
     color: white;

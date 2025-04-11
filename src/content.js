@@ -35,6 +35,7 @@ const injectSidebar = async () => {
     await fetch("chrome-extension://" + chrome.runtime.id + "/src/sidebar/sidebar.css")
         .then(response => response.text())
         .then(sidebarcss => {
+            sidebarcss = sidebarcss.replaceAll("${chrome.runtime.id}", chrome.runtime.id);
             style.textContent = sidebarcss;
         })
         .catch(error => {

@@ -65,20 +65,30 @@ const injectSidebar = async () => {
     pageTabButton.addEventListener('click', () => {
         console.log('Page tab clicked');
         pageTabContent.style.display = 'block';
+        pageTabButton.style.backgroundColor = '#76b600'; 
         chatTabContent.style.display = 'none';
+        chatTabButton.style.backgroundColor = '#218500'; 
         configTabContent.style.display = 'none';
+        configTabButton.style.backgroundColor = '#218500';
+
     });
     chatTabButton.addEventListener('click', () => {
         console.log('Chat tab clicked');
         chatTabContent.style.display = 'block';
+        chatTabButton.style.backgroundColor = '#76b600';
         pageTabContent.style.display = 'none';
+        pageTabButton.style.backgroundColor = '#218500';
         configTabContent.style.display = 'none';
+        configTabButton.style.backgroundColor = '#218500';
     });
     configTabButton.addEventListener('click', () => {
         console.log('Config tab clicked');
         configTabContent.style.display = 'block';
+        configTabButton.style.backgroundColor = '#76b600';
         pageTabContent.style.display = 'none';
+        pageTabButton.style.backgroundColor = '#218500';
         chatTabContent.style.display = 'none';
+        chatTabButton.style.backgroundColor = '#218500';
     });
 
     // Add event listener to the summarize button (handle content selection)

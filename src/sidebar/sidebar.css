@@ -48,6 +48,10 @@
     margin: 0;
 }
 
+#ollama-sidebar .tabs button.selected {
+    border: none;
+}
+
 #ollama-sidebar .tabs button:hover {
     background-color: #609700;
 }
@@ -196,7 +200,7 @@
     color: black;
     font-weight: bold;
     border: none;
-    padding: 4px 40px;
+    padding: 4px 10px;
     width: calc(50% - 10px);
     margin: 5px;
     cursor: pointer;
@@ -331,4 +335,9 @@
 #ollama-sidebar label {
     width: 30%;
     align-self: right;
+}
+
+#ollama-sidebar input {
+    color: black;
+    background-color: #fff;
 }
